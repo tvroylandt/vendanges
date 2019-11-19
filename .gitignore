@@ -33,3 +33,9 @@ vignettes/*.pdf
 /*_files/
 # End of https://www.gitignore.io/api/r
 inst/doc
+
+
+# Pour éviter la surcharge du github
+*.dbf
+*.rds
+data/dads_source/
