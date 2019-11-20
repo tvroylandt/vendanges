@@ -1,0 +1,86 @@
+---
+title: "Analyse vendanges DADS"
+author: "Thomas Vroylandt"
+date: "20/11/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(here)
+
+# Import
+dads_postes <- read_rds(here("data/dads_filtre_05_15.rds"))
+```
+
+## Analyse démographique
+
+```{r demographie, eval = FALSE}
+# 2015
+dads_demo_2015 <- dads2015_postes %>%
+  filter(PCS %in% c("691D")) %>% 
+  group_by(SEXE, AGE_TR) %>% 
+  summarise(n = sum(POND)) %>% 
+  ungroup() %>% 
+  mutate(part_n = n / sum(n) * 100,
+         SEXE = paste0(SEXE, "_2015")) %>% 
+  select(-n) %>%
+  spread(SEXE, part_n)
+
+# 2010
+dads_demo_2010 <- dads2010_postes %>%
+  filter(PCS %in% c("691D")) %>% 
+  mutate(AGE_TR = cut(AGE, breaks = c(0, 15, 19, 23, 27, 31, 35, 39, 
+                                      43, 47, 51, 55, 59, 63, 67, 71, 150), 
+                      include.lowest = TRUE, right = FALSE,
+                      labels = c("00", "19", "23", "27", "31", "35", "39",
+                                 "43", "47", "51", "55", "59", "63", "67", "71", "72"))) %>% 
+  group_by(SEXE, AGE_TR) %>% 
+  summarise(n = sum(POND)) %>% 
+  ungroup() %>% 
+  mutate(part_n = n / sum(n) * 100,
+         SEXE = paste0(SEXE, "_2010")) %>%
+  select(-n) %>% 
+  spread(SEXE, part_n) %>%
+  filter(AGE_TR != "00" & !is.na(AGE_TR))
+
+# Fusion
+dads_demo_2015 %>% 
+  left_join(dads_demo_2010, by = c("AGE_TR")) %>% 
+  write_xlsx("Outputs/dads_demo_age_sexe.xlsx")
+```
+
+## Analyse géographique
+
+## Analyse de la saisonnalité
+
+```{r saisonnalite}
+# On construit des périodes d'emploi
+seq_empl <- dads_postes %>% 
+  group_by(annee, DATDEB, DATFIN) %>% 
+  count() %>% 
+  mutate(n = n * 12)
+
+seq_empl_jour <- tibble(jour = seq(-30, 360, 1)) %>% 
+  mutate(join = "1") %>% 
+  full_join((seq_empl %>% 
+               mutate(join = "1")),
+            by = "join") %>% 
+  mutate(ind_ok = case_when(jour >= DATDEB & jour <= DATFIN ~ "1",
+                            TRUE ~ "0")) %>% 
+  filter(ind_ok == "1") %>% 
+  group_by(annee, jour) %>% 
+  summarise(n = sum(n))  %>% 
+  filter(jour > 0) %>% 
+  group_by(annee) %>% 
+  mutate(part_n = n / sum(n)) %>% 
+  ungroup()
+
+# graph
+seq_empl_jour %>% 
+  ggplot(aes(x = jour, y = part_n * 100, color = as.character(annee))) +
+  geom_line(lwd = 1)
+```
+
