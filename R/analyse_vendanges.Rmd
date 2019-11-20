@@ -18,38 +18,27 @@ dads_postes <- read_rds(here("data/dads_filtre_05_15.rds"))
 ## Analyse démographique
 
 ```{r demographie, eval = FALSE}
-# 2015
-dads_demo_2015 <- dads2015_postes %>%
-  filter(PCS %in% c("691D")) %>% 
-  group_by(SEXE, AGE_TR) %>% 
-  summarise(n = sum(POND)) %>% 
-  ungroup() %>% 
-  mutate(part_n = n / sum(n) * 100,
-         SEXE = paste0(SEXE, "_2015")) %>% 
-  select(-n) %>%
-  spread(SEXE, part_n)
-
-# 2010
-dads_demo_2010 <- dads2010_postes %>%
-  filter(PCS %in% c("691D")) %>% 
+dads_demo <- dads_postes %>%
   mutate(AGE_TR = cut(AGE, breaks = c(0, 15, 19, 23, 27, 31, 35, 39, 
                                       43, 47, 51, 55, 59, 63, 67, 71, 150), 
                       include.lowest = TRUE, right = FALSE,
                       labels = c("00", "19", "23", "27", "31", "35", "39",
                                  "43", "47", "51", "55", "59", "63", "67", "71", "72"))) %>% 
-  group_by(SEXE, AGE_TR) %>% 
-  summarise(n = sum(POND)) %>% 
-  ungroup() %>% 
+  group_by(annee, SEXE, AGE_TR) %>% 
+  count() %>% 
+  mutate(n = n * 12) %>% 
+  group_by(annee) %>% 
   mutate(part_n = n / sum(n) * 100,
-         SEXE = paste0(SEXE, "_2010")) %>%
-  select(-n) %>% 
-  spread(SEXE, part_n) %>%
-  filter(AGE_TR != "00" & !is.na(AGE_TR))
+         part_n = if_else(SEXE == "2", -part_n, part_n)) %>%
+  filter(AGE_TR != "00" & !is.na(AGE_TR)) %>% 
+  ungroup()
 
 # Fusion
-dads_demo_2015 %>% 
-  left_join(dads_demo_2010, by = c("AGE_TR")) %>% 
-  write_xlsx("Outputs/dads_demo_age_sexe.xlsx")
+dads_demo %>% 
+  ggplot(aes(x = AGE_TR, y = part_n, fill = SEXE)) +
+  geom_bar(stat = "identity", position = "dodge", width = 2) +
+  facet_wrap(vars(annee)) +
+  coord_flip()
 ```
 
 ## Analyse géographique
