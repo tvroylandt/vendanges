@@ -383,38 +383,27 @@ $(document).ready(function () {
 
 <div id="analyse-demographique" class="section level2">
 <h2>Analyse démographique</h2>
-<pre class="r"><code># 2015
-dads_demo_2015 &lt;- dads2015_postes %&gt;%
-  filter(PCS %in% c(&quot;691D&quot;)) %&gt;% 
-  group_by(SEXE, AGE_TR) %&gt;% 
-  summarise(n = sum(POND)) %&gt;% 
-  ungroup() %&gt;% 
-  mutate(part_n = n / sum(n) * 100,
-         SEXE = paste0(SEXE, &quot;_2015&quot;)) %&gt;% 
-  select(-n) %&gt;%
-  spread(SEXE, part_n)
-
-# 2010
-dads_demo_2010 &lt;- dads2010_postes %&gt;%
-  filter(PCS %in% c(&quot;691D&quot;)) %&gt;% 
+<pre class="r"><code>dads_demo &lt;- dads_postes %&gt;%
   mutate(AGE_TR = cut(AGE, breaks = c(0, 15, 19, 23, 27, 31, 35, 39, 
                                       43, 47, 51, 55, 59, 63, 67, 71, 150), 
                       include.lowest = TRUE, right = FALSE,
                       labels = c(&quot;00&quot;, &quot;19&quot;, &quot;23&quot;, &quot;27&quot;, &quot;31&quot;, &quot;35&quot;, &quot;39&quot;,
                                  &quot;43&quot;, &quot;47&quot;, &quot;51&quot;, &quot;55&quot;, &quot;59&quot;, &quot;63&quot;, &quot;67&quot;, &quot;71&quot;, &quot;72&quot;))) %&gt;% 
-  group_by(SEXE, AGE_TR) %&gt;% 
-  summarise(n = sum(POND)) %&gt;% 
-  ungroup() %&gt;% 
+  group_by(annee, SEXE, AGE_TR) %&gt;% 
+  count() %&gt;% 
+  mutate(n = n * 12) %&gt;% 
+  group_by(annee) %&gt;% 
   mutate(part_n = n / sum(n) * 100,
-         SEXE = paste0(SEXE, &quot;_2010&quot;)) %&gt;%
-  select(-n) %&gt;% 
-  spread(SEXE, part_n) %&gt;%
-  filter(AGE_TR != &quot;00&quot; &amp; !is.na(AGE_TR))
+         part_n = if_else(SEXE == &quot;2&quot;, -part_n, part_n)) %&gt;%
+  filter(AGE_TR != &quot;00&quot; &amp; !is.na(AGE_TR)) %&gt;% 
+  ungroup()
 
 # Fusion
-dads_demo_2015 %&gt;% 
-  left_join(dads_demo_2010, by = c(&quot;AGE_TR&quot;)) %&gt;% 
-  write_xlsx(&quot;Outputs/dads_demo_age_sexe.xlsx&quot;)</code></pre>
+dads_demo %&gt;% 
+  ggplot(aes(x = AGE_TR, y = part_n, fill = SEXE)) +
+  geom_bar(stat = &quot;identity&quot;, position = &quot;dodge&quot;, width = 2) +
+  facet_wrap(vars(annee)) +
+  coord_flip()</code></pre>
 </div>
 <div id="analyse-geographique" class="section level2">
 <h2>Analyse géographique</h2>

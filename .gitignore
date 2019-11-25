@@ -35,7 +35,7 @@ vignettes/*.pdf
 inst/doc
 
 
-# Pour éviter la surcharge du github
+# Pour eviter la surcharge du github
 *.dbf
-*.rds
+
 data/dads_source/
