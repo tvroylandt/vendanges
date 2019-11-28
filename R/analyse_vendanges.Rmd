@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 library(tidyverse)
 library(here)
 library(gganimate)
-
+library(CARTElette)
 ```
 
 
@@ -259,17 +259,33 @@ dads_postes %>%
   )
 ```
 
-
 ## Analyse géographique
 
-```{r}
-dads_postes%>% 
-  filter(filtre_poste == "2" & DEPT %in% c("51", "33", "21", "69", "02", "13")) %>% 
-  ggplot(aes(x = DEPT, y = DATDEB)) +
-  geom_boxplot() +
-  coord_flip()
-```
+```{r saisonnalite_geo}
+# Stats par dep
+stats_dep <- dads_postes %>% 
+  filter(filtre_poste == "Annexe") %>% 
+  group_by(DEPT) %>% 
+  summarise(date_deb_med = median(DATDEB),
+            date_deb_mean = mean(DATDEB),
+            date_deb_q1 = quantile(DATDEB)[2],
+            date_deb_q3 = quantile(DATDEB)[4],
+            n = n()) %>% 
+  filter(n > 30) 
 
+# Shp dep
+shp_dep <- loadMap(COG = 2015, nivsupra = "DEP") 
+
+# Jointure
+shp_dep %>% 
+  left_join(stats_dep, by = c("DEP" = "DEPT")) %>% 
+  filter(!DEP %in% c("971", "972", "973", "974", "976")) %>% 
+  ggplot() +
+  geom_sf(aes(fill = date_deb_med)) +
+  scale_fill_gradient(low = "white", high = "red", na.value = "grey80") +
+  theme_void()
+
+```
 
 ## Analyse démographique
 
