@@ -18,6 +18,8 @@ dads_postes <- read_rds(here("data/dads_filtre_05_15.rds"))
 
 Intro sur qui compose la PCS au niveau métier, combien d'emploi (postes) cela représente + renvoi à la note méthodologique de fin.
 
+691D : Ouvriers de la viticulture ou de l'arboriculture fruitière
+
 ## Deux types d'emplois
 
 On cherche ici à séparer deux types d'emploi dans la PCS :
@@ -74,8 +76,12 @@ gif_seq_empl_jour <- seq_empl_jour %>%
   transition_time(annee) +
   labs(title = "{frame_time}")
 
-# gif
-gif_seq_empl_jour 
+# annee
+dads_postes%>% 
+  filter(FILT == "2" & annee != 2005) %>% 
+  ggplot(aes(x = as.character(annee), y = DATDEB)) +
+  geom_boxplot() +
+  coord_flip()
 ```
 
 ## Analyse démographique
@@ -105,6 +111,15 @@ dads_demo %>%
 ```
 
 ## Analyse géographique
+
+```{r}
+dads_postes%>% 
+  filter(FILT == "2" & DEPT %in% c("51", "33", "21", "69", "02", "13")) %>% 
+  ggplot(aes(x = DEPT, y = DATDEB)) +
+  geom_boxplot() +
+  coord_flip()
+```
+
 
 ## Analyse de la saisonnalité
 
