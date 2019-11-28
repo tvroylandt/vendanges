@@ -16,6 +16,68 @@ library(gganimate)
 dads_postes <- read_rds(here("data/dads_filtre_05_15.rds"))
 ```
 
+Intro sur qui compose la PCS au niveau métier, combien d'emploi (postes) cela représente + renvoi à la note méthodologique de fin.
+
+## Deux types d'emplois
+
+On cherche ici à séparer deux types d'emploi dans la PCS :
+
++ les emplois permanents : on prend les postes non annexes : ils représentent un peu moins de la moitié des emplois mais une forte majorité des jours travaillés ;
++ les emplois saisonniers : on prend les postes annexes. De fait, le constat est inversé.
+
+On va se servir de cette différence dans l'analyse.
+
+```{r diff_emploi}
+# % des emplois
+dads_postes %>% 
+  group_by(annee, FILT) %>% 
+  count() %>% 
+  group_by(annee) %>% 
+  mutate(part_n = n /sum(n)) %>% 
+  ungroup()
+
+# On construit des périodes d'emploi
+seq_empl <- dads_postes %>% 
+  group_by(annee, DATDEB, DATFIN, FILT) %>% 
+  count() %>% 
+  mutate(n = n * 12)
+
+seq_empl_jour <- tibble(jour = seq(-30, 360, 1)) %>% 
+  mutate(join = "1") %>% 
+  full_join((seq_empl %>% 
+               mutate(join = "1")),
+            by = "join") %>% 
+  mutate(ind_ok = case_when(jour >= DATDEB & jour <= DATFIN ~ "1",
+                            TRUE ~ "0")) %>% 
+  filter(ind_ok == "1") %>% 
+  group_by(annee, jour, FILT) %>% 
+  summarise(n = sum(n))  %>% 
+  filter(jour > 0) %>% 
+  group_by(annee) %>% 
+  mutate(part_n = n / sum(n)) %>% 
+  ungroup()
+
+# % des jours travaillés
+seq_empl_jour %>% 
+  group_by(annee, FILT) %>% 
+  summarise(sum(part_n))
+
+# graph
+gif_seq_empl_jour <- seq_empl_jour %>% 
+  mutate(FILT = fct_recode(FILT,
+                           "Annexe" = "2",
+                           "Non annexe" = "1"),
+         FILT = fct_relevel(FILT,
+                            "Annexe", "Non annexe")) %>% 
+  ggplot(aes(x = jour, y = part_n * 100, fill = FILT)) +
+  geom_area(stat = "identity") +
+  transition_time(annee) +
+  labs(title = "{frame_time}")
+
+# gif
+gif_seq_empl_jour 
+```
+
 ## Analyse démographique
 
 ```{r demographie}
@@ -25,27 +87,21 @@ dads_demo <- dads_postes %>%
                       include.lowest = TRUE, right = FALSE,
                       labels = c("00", "19", "23", "27", "31", "35", "39",
                                  "43", "47", "51", "55", "59", "63", "67", "71", "72"))) %>% 
-  group_by(annee, SEXE, AGE_TR) %>% 
+  group_by(annee, SEXE, AGE_TR, FILT) %>% 
   count() %>% 
   mutate(n = n * 12) %>% 
-  group_by(annee) %>% 
+  group_by(annee, FILT) %>% 
   mutate(part_n = n / sum(n) * 100,
          part_n = if_else(SEXE == "2", -part_n, part_n)) %>%
   filter(AGE_TR != "00" & !is.na(AGE_TR)) %>% 
   ungroup()
 
 # Fusion
-pyramide_anim <- dads_demo %>% 
+dads_demo %>% 
   ggplot(aes(x = AGE_TR, y = part_n, fill = SEXE)) +
   geom_bar(stat = "identity", position = "dodge", width = 2) +
-  transition_time(annee) +
   coord_flip() +
-  labs(title = "{frame_time}")
-
-# GIF + export --> à optimiser
-pyramide_gif <- animate(pyramide_anim, renderer = gifski_renderer())
-
-gifski::save_gif(pyramide_gif, "outputs/pyramide_anim.gif")
+  facet_grid(rows = vars(annee), cols = vars(FILT))
 ```
 
 ## Analyse géographique
@@ -80,3 +136,9 @@ seq_empl_jour %>%
   geom_line(lwd = 1)
 ```
 
+
+> ## Note méthodologique
+>
+> Ce que sont les DADS, etc...
+> + lien vers le github
+>
