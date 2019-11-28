@@ -145,71 +145,118 @@ seq_empl_jour %>%
                      limits = c(0, 0.6)) +
   scale_fill_manual("Type de poste",
                     values = c("#ff4500", "#00baff")) +
-  theme_minimal() +
+  labs(caption = "Source : Insee - DADS \nPart des emplois par date, moyenne décennale 2006-2015") +
+  theme_minimal(base_line_size = 1) +
   theme(
     axis.text.x = element_text(
       size = 11,
       vjust = 1,
       angle = 60
     ),
-    axis.text.y = element_text(size = 11)
+    axis.text.y = element_text(size = 11),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.major.y = element_line(color = "grey80"),
+    plot.caption = element_text(hjust = 0)
   )
 
 ```
 
-```{r diff_emploi}
-# % des emplois
-dads_postes %>% 
-  group_by(annee, filtre_poste) %>% 
-  count() %>% 
-  group_by(annee) %>% 
-  mutate(part_n = n /sum(n)) %>% 
-  ungroup()
+Pour les postes annexes, la saisonnalité est fortement marquée. On peut toutefois observer des différences selon les années, avec des récoltes plus ou moins tardives, fonction notamment des conditions météorologiques à l'hiver, au printemps et durant tout l'été. Ces phénomènes se répercutent alors sur l'emploi.
 
-# On construit des périodes d'emploi
-seq_empl <- dads_postes %>% 
-  group_by(annee, DATDEB, DATFIN, filtre_poste) %>% 
-  count() %>% 
-  mutate(n = n * 12)
-
-seq_empl_jour <- tibble(jour = seq(-30, 360, 1)) %>% 
-  mutate(join = "1") %>% 
-  full_join((seq_empl %>% 
-               mutate(join = "1")),
-            by = "join") %>% 
-  mutate(ind_ok = case_when(jour >= DATDEB & jour <= DATFIN ~ "1",
-                            TRUE ~ "0")) %>% 
-  filter(ind_ok == "1") %>% 
-  group_by(annee, jour, filtre_poste) %>% 
-  summarise(n = sum(n))  %>% 
-  filter(jour > 0) %>% 
-  group_by(annee) %>% 
-  mutate(part_n = n / sum(n)) %>% 
-  ungroup()
-
-# % des jours travaillés
-seq_empl_jour %>% 
-  group_by(annee, filtre_poste) %>% 
-  summarise(sum(part_n))
-
-# graph
-gif_seq_empl_jour <- seq_empl_jour %>% 
-  mutate(filtre_poste = fct_recode(filtre_poste,
-                           "Annexe" = "2",
-                           "Non annexe" = "1"),
-         filtre_poste = fct_relevel(filtre_poste,
-                            "Annexe", "Non annexe")) %>% 
-  ggplot(aes(x = jour, y = part_n * 100, fill = filtre_poste)) +
-  geom_area(stat = "identity") +
-  transition_time(annee) +
-  labs(title = "{frame_time}")
-
-# annee
-dads_postes%>% 
-  filter(filtre_poste == "2" & annee != 2005) %>% 
-  ggplot(aes(x = as.character(annee), y = DATDEB)) +
-  geom_boxplot() +
-  coord_flip()
+```{r saisonnalite_annee, fig.height=6, fig.width=12}
+# Saisonnalité par année sur les dates de début
+dads_postes %>%
+  filter(filtre_poste == "Annexe" & DATDEB > 0) %>%
+  ggplot() +
+  geom_boxplot(aes(x = annee, y = DATDEB / 30, group = annee),
+               outlier.alpha = 0.03) +
+  geom_label(
+    data = tibble(x = 2009, y = 3, label = "2007 et 2011 sont des années de vendanges précoces"),
+    aes(
+      x = x,
+      y = y,
+      label = str_wrap(label, 18)
+    ),
+    label.size = NA
+  ) +
+  geom_label(
+    data = tibble(x = 2014, y = 3.5, label = "En 2013, les vendanges sont tardives, en octobre"),
+    aes(
+      x = x,
+      y = y,
+      label = str_wrap(label, 18)
+    ),
+    label.size = NA
+  ) +
+  geom_curve(
+    data = tibble(
+      x = c(2008.7, 2009.2),
+      y = c(4.3, 4.3),
+      xend = c(2007, 2011),
+      yend = c(7.8, 7.6)
+    ),
+    aes(
+      x = x,
+      y = y,
+      xend = xend,
+      yend = yend
+    ),
+    size = 0.5,
+    curvature = -0.1,
+    arrow = arrow(length = unit(0.01, "npc"), type = "open")
+  ) +
+  geom_curve(
+    data = tibble(
+      x = 2014,
+      y = 4.6,
+      xend = 2013.1,
+      yend = 8.9
+    ),
+    aes(
+      x = x,
+      y = y,
+      xend = xend,
+      yend = yend
+    ),
+    size = 0.5,
+    curvature = 0.1,
+    arrow = arrow(length = unit(0.01, "npc"), type = "open")
+  ) +
+  scale_x_continuous("", breaks = seq(2006, 2015, 1)) +
+  scale_y_continuous(
+    "",
+    breaks = seq(0, 11, 1),
+    labels = c(
+      "Janvier",
+      "Février",
+      "Mars",
+      "Avril",
+      "Mai",
+      "Juin",
+      "Juillet",
+      "Août",
+      "Septembre",
+      "Octobre",
+      "Novembre",
+      "Décembre"
+    )
+  ) +
+  coord_flip() +
+  labs(caption = "Source : Insee - DADS \nDate de début des postes annexes") +
+  theme_minimal(base_line_size = 1) +
+  theme(
+    axis.text.x = element_text(
+      size = 11,
+      vjust = 0.5,
+      angle = 60
+    ),
+    axis.text.y = element_text(size = 11),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.y = element_blank(),
+    panel.grid.major.x = element_line(color = "grey80"),
+    plot.caption = element_text(hjust = 0)
+  )
 ```
 
 
