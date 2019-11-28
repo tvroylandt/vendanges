@@ -152,8 +152,21 @@ seq_empl_jour %>%
 ```
 
 
-> ## Note méthodologique
+> ## Méthodologie
 >
-> Ce que sont les DADS, etc...
-> + lien vers le github
+> La déclaration annuelle de données sociales (DADS) est une formalité administrative obligatoire pour toute entreprise employant des salariés. Elle contient des informations relatives à l'établissement et au salarié.
+> Ces données sont recueillies par l'Insee qui constitue des fichiers d'analyse. Le fichier utilisé ici est le fichier "postes" où chaque enregistrement correspond à un poste, c'est-à-dire à la consolidation des périodes de travail d'un salarié dans un même établissement.
+>
+> Un poste est catégorisé en fonction de plusieurs critères pour analyser si il re lève d'un "vrai" emploi ou d'un poste non annexe, par exemple saisonnier ou de très courte durée. Un poste est dit non-annexe si :
+>
+> + la rémunération nette est supérieure à 3 SMIC mensuels ;
+> + ou le nombre d'heures salariées est supérieur à 120 et la durée de travail supérieure à 30 jours.
+>
+> Dans les autres cas, le poste est considéré comme annexe.
+>
+> ## Code et analyse
+>
+> L'ensemble de l'analyse et du code est disponible sur [github](https://github.com/tvroylandt/vendanges).
+>
+> Les remarques, commentaires et propositions sont les bienvenus : tvroylandt@gmail.com
 >
