@@ -11,14 +11,17 @@ knitr::opts_chunk$set(
 	message = FALSE,
 	warning = FALSE
 )
-
 library(tidyverse)
 library(here)
 library(gganimate)
 library(CARTElette)
 library(sf)
-```
 
+# Shp dep
+shp_dep <- loadMap(COG = 2015, nivsupra = "DEP") %>%
+  filter(!DEP %in% c("971", "972", "973", "974", "976")) %>%
+  st_simplify(dTolerance = 1500, preserveTopology = FALSE)
+```
 
 ```{r import_clean}
 # Import - filtre à intégrer en amont
@@ -262,11 +265,7 @@ dads_postes %>%
 
 ## Analyse géographique
 
-```{r saisonnalite_geo_1}
-# Shp dep
-shp_dep <- loadMap(COG = 2015, nivsupra = "DEP") %>%
-  filter(!DEP %in% c("971", "972", "973", "974", "976"))
-
+```{r saisonnalite_geo, fig.align='center'}
 # Stats par dep
 stats_dep <- dads_postes %>%
   filter(filtre_poste == "Annexe") %>%
@@ -285,38 +284,6 @@ stats_dep <- dads_postes %>%
     n = n()
   )
 
-# OPTION 1 - Date médiane par département
-# Avec sélection des départements et flèche
-# Jointure
-stats_dep_shp <- shp_dep %>%
-  filter(n > 30 & date_deb_med > 230) %>%
-  left_join(stats_dep, by = c("DEP" = "DEPT"))
-
-# Centroids pour label
-label_dep <- stats_dep_shp %>%
-  st_centroid %>%
-  st_coordinates() %>%
-  as_tibble() %>%
-  bind_cols(date_deb_med = stats_dep_shp$date_deb_med) %>%
-  filter(!is.na(date_deb_med))
-
-# Graph
-ggplot() +
-  geom_sf(data = stats_dep_shp, aes(fill = date_deb_med)) +
-  geom_text(data = label_dep,
-            aes(x = X, y = Y, label = date_deb_med),
-            size = 3) +
-  scale_fill_gradient(
-    name = "Date médiane \nde début d'emploi",
-    low = "#ffb59a",
-    high = "#ff4500",
-    na.value = "grey80"
-  ) +
-  theme_void()
-```
-
-```{r saisonnalite_geo_2, eval = FALSE}
-# OPTION 2 - Progression de l'emploi
 # Avec sélection des départements
 # Et on anime les transitions par décile
 decile_dep <- stats_dep %>%
@@ -345,10 +312,10 @@ decile_dep_shp <- shp_dep %>%
                              "60 %" = "d6",
                              "70 %" = "d7",
                              "80 %" = "d8",
-                             "90 %" = "d9")
+                             "90 %" = "d9"),
          val_decile = if_else(is.na(val_decile), 0, val_decile))
 
-# Graph animé
+# Carte GIF
 anim_carte <- ggplot() +
   geom_sf(data = decile_dep_shp, aes(fill = decile)) +
   scale_fill_manual("Part des emplois \nayant débuté",
@@ -369,6 +336,11 @@ anim_carte <- ggplot() +
                     cumulative = TRUE) +
   labs(title = "Jour : {current_frame}") +
   theme_void()
+
+# TO DO
+# Ralentir le GIF
+# Ajout de commentaire qui apparaissent sur la gironde, la champagne et l'occitanie
+# Affichage de la date
 
 anim_carte
 ```
