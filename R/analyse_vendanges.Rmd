@@ -414,25 +414,70 @@ dads_demo_comparaison <- dads_demo %>%
   count() %>%
   mutate(n = n * 12) %>%
   group_by(filtre_poste) %>%
-  mutate(part_n = n / sum(n) * 100,
-         part_n = if_else(SEXE == "Femme", -part_n, part_n)) %>%
+  mutate(part_n = n / sum(n) * 100) %>%
   filter(AGE_TR != "00" & !is.na(AGE_TR)) %>%
   ungroup()
 
+# Commentaire
+com_label <- tibble(x = c("55-59 ans", "59-63 ans"),
+                    y = c(8.5, 10),
+                    label = c("Les postes saisonniers sont plutôt occupés par des jeunes",
+                    "Les tranches d'âges sont davantages réparties dans les postes permanents"),
+                    filtre_poste = c("Annexe", "Non annexe"))
+
+com_fleche <- tibble(x = "47-51 ans",
+                     xend = "19-23 ans",
+                     y = c(6, 8.5),
+                     yend =c(-6, 10),
+                     filtre_poste = "Annexe")
+
 # Fusion
-dads_demo_comparaison %>% 
-  ggplot(aes(x = AGE_TR, fill = SEXE, y = part_n)) +
-  geom_bar(
+ggplot() +
+  geom_bar(data = filter(dads_demo_comparaison, SEXE == "Homme") ,
+    aes(x = AGE_TR, fill = SEXE, y = part_n),
     stat = "identity",
     position = "dodge",
     width = 2
   ) +
+  geom_bar(data = filter(dads_demo_comparaison, SEXE == "Femme") ,
+    aes(x = AGE_TR, fill = SEXE, y = -part_n),
+    stat = "identity",
+    position = "dodge",
+    width = 2
+  ) +
+  geom_label(
+    data = com_label,
+    aes(
+      x = x,
+      y = y,
+      label = str_wrap(label, 15)
+    ),
+    size = 3.5,
+    label.size = NA
+  ) +
+  geom_curve(
+    data = com_fleche,
+    aes(
+      x = x,
+      y = y,
+      xend = xend,
+      yend = yend
+    ),
+    size = 0.5,
+    curvature = -0.1,
+    arrow = arrow(length = unit(0.02, "npc"), 
+                  type = "open")
+  ) +
   scale_x_discrete("") +
-  scale_y_continuous(name = "Part des emplois (en %)",
-                     breaks = seq(-12, 14, 2),
-                     labels = paste0(as.character(c(seq(12, 0, -2), seq(2, 14, 2))))) +
+  scale_y_continuous(
+    name = "Part des emplois (en %)",
+    breaks = seq(-12, 14, 2),
+    labels = paste0(as.character(c(
+      seq(12, 0,-2), seq(2, 14, 2)
+    )))
+  ) +
   scale_fill_manual("Sexe",
-                    values = c("#00baff", "#ff4500")) +
+                    values = c("Homme" = "#00baff", "Femme" = "#ff4500")) +
   coord_flip() +
   facet_grid(cols = vars(filtre_poste)) +
   labs(caption = "Source : Insee - DADS \nMoyenne 2006-2015 \nLa construction des données impose des classes d'âges quadriennales") +
