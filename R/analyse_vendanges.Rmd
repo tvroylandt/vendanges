@@ -265,6 +265,10 @@ dads_postes %>%
 
 ## Analyse géographique
 
+Selon les départements, les récoltes et en particulier les vendanges, ne débutent pas à la même date.
+
+Cas Champagne, Gironde, Alasace, Occitanie, etc...
+
 ```{r saisonnalite_geo, fig.align='center'}
 # Stats par dep
 stats_dep <- dads_postes %>%
@@ -294,15 +298,36 @@ decile_dep <- stats_dep %>%
   ) %>%
   filter(n > 30) %>%
   select(DEPT, decile, val_decile) %>%
-  mutate(decile = str_sub(decile,-2,-1),
-         val_decile = round(val_decile, 0),
-         val_decile = if_else(val_decile < 1, 0, val_decile)) 
+  mutate(
+    decile = str_sub(decile, -2, -1),
+    val_decile = round(val_decile, 0),
+    val_decile = if_else(val_decile < 1, 1, val_decile),
+    mois_trunc = trunc(val_decile / 30),
+    jour = round((val_decile / 30 - mois_trunc) * 30, 0) + 1,
+    mois = fct_recode(
+      as.character(mois_trunc + 1),
+      "janvier" = "1",
+      "février" = "2",
+      "mars" = "3",
+      "avril" = "4",
+      "mai" = "5",
+      "juin" = "6",
+      "juillet" = "7",
+      "août" = "8",
+      "septembre" = "9",
+      "octobre" = "10",
+      "novembre" = "11",
+      "décembre" = "12"
+    ),
+    date = paste(jour, mois, sep = " ")
+  ) %>%
+  select(DEPT, decile, val_decile, date)
 
 # Jointure
 decile_dep_shp <- shp_dep %>%
   left_join(decile_dep %>%
               bind_rows(tibble(DEPT = unique(decile_dep$DEPT))), by = c("DEP" = "DEPT")) %>%
-  mutate(decile = fct_explicit_na(decile, ""),
+  mutate(decile = fct_explicit_na(decile, "NS"),
          decile = fct_recode(decile,
                              "10 %" = "d1",
                              "20 %" = "d2",
@@ -313,7 +338,9 @@ decile_dep_shp <- shp_dep %>%
                              "70 %" = "d7",
                              "80 %" = "d8",
                              "90 %" = "d9"),
-         val_decile = if_else(is.na(val_decile), 0, val_decile))
+         date = if_else(is.na(date), "1 janvier", date),
+         val_decile = if_else(is.na(val_decile), 1, val_decile),
+         date = fct_reorder(date, val_decile))
 
 # Carte GIF
 anim_carte <- ggplot() +
@@ -332,17 +359,17 @@ anim_carte <- ggplot() +
       "grey80"
     )
   ) +
-  transition_manual(val_decile, 
-                    cumulative = TRUE) +
-  labs(title = "Jour : {current_frame}") +
-  theme_void()
+  labs(title = "Date : {current_frame}") +
+  theme_void() +
+  labs(caption = "Source : Insee - DADS \nDate de début des postes annexes \nDépartements avec plus de 30 observations avant pondération sur 10 ans \nNS : Non significatif") +
+   theme(
+    plot.caption = element_text(hjust = 0)
+  ) +
+  transition_manual(date, 
+                    cumulative = TRUE)
 
-# TO DO
-# Ralentir le GIF
-# Ajout de commentaire qui apparaissent sur la gironde, la champagne et l'occitanie
-# Affichage de la date
-
-anim_carte
+# Animation
+animate(anim_carte, fps = 1)
 ```
 
 ## Analyse démographique
