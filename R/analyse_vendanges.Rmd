@@ -374,37 +374,89 @@ animate(anim_carte, fps = 1)
 
 ## Analyse démographique
 
-```{r demographie}
+On a des profils différents selon qu'il s'agisse des postes annexes ou non annexes.
+
+```{r demographie_comparaison, fig.height=6, fig.width=12}
+
 dads_demo <- dads_postes %>%
-  mutate(AGE_TR = cut(AGE, breaks = c(0, 15, 19, 23, 27, 31, 35, 39, 
-                                      43, 47, 51, 55, 59, 63, 67, 71, 150), 
-                      include.lowest = TRUE, right = FALSE,
-                      labels = c("00", "19", "23", "27", "31", "35", "39",
-                                 "43", "47", "51", "55", "59", "63", "67", "71", "72"))) %>% 
-  group_by(annee, SEXE, AGE_TR, filtre_poste) %>% 
-  count() %>% 
-  mutate(n = n * 12) %>% 
-  group_by(annee, filtre_poste) %>% 
+  mutate(
+    AGE_TR = cut(
+      AGE,
+      breaks = c(0, 19, 23, 27, 31, 35, 39,
+                 43, 47, 51, 55, 59, 63, 67, 150),
+      include.lowest = TRUE,
+      right = FALSE,
+      labels = c(
+        "Moins de 19 ans",
+        "19-23 ans",
+        "23-27 ans",
+        "27-31 ans",
+        "31-35 ans",
+        "35-39 ans",
+        "39-43 ans",
+        "43-47 ans",
+        "47-51 ans",
+        "51-55 ans",
+        "55-59 ans",
+        "59-63 ans",
+        "63-67 ans",
+        "67 ans et plus"
+      )
+    ),
+    SEXE = fct_recode(SEXE,
+                      "Homme" = "1",
+                      "Femme" = "2")
+  )
+
+# Comparaison annexe / non-annexe
+dads_demo_comparaison <- dads_demo %>%
+  group_by(SEXE, AGE_TR, filtre_poste) %>%
+  count() %>%
+  mutate(n = n * 12) %>%
+  group_by(filtre_poste) %>%
   mutate(part_n = n / sum(n) * 100,
-         part_n = if_else(SEXE == "2", -part_n, part_n)) %>%
-  filter(AGE_TR != "00" & !is.na(AGE_TR)) %>% 
+         part_n = if_else(SEXE == "Femme", -part_n, part_n)) %>%
+  filter(AGE_TR != "00" & !is.na(AGE_TR)) %>%
   ungroup()
 
 # Fusion
-dads_demo %>% 
-  ggplot(aes(x = AGE_TR, y = part_n, fill = SEXE)) +
-  geom_bar(stat = "identity", position = "dodge", width = 2) +
+dads_demo_comparaison %>% 
+  ggplot(aes(x = AGE_TR, fill = SEXE, y = part_n)) +
+  geom_bar(
+    stat = "identity",
+    position = "dodge",
+    width = 2
+  ) +
+  scale_x_discrete("") +
+  scale_y_continuous(name = "Part des emplois (en %)",
+                     breaks = seq(-12, 14, 2),
+                     labels = paste0(as.character(c(seq(12, 0, -2), seq(2, 14, 2))))) +
+  scale_fill_manual("Sexe",
+                    values = c("#00baff", "#ff4500")) +
   coord_flip() +
-  facet_grid(rows = vars(annee), cols = vars(filtre_poste))
+  facet_grid(cols = vars(filtre_poste)) +
+  labs(caption = "Source : Insee - DADS \nMoyenne 2006-2015 \nLa construction des données impose des classes d'âges quadriennales") +
+  theme_minimal(base_line_size = 1) +
+  theme(
+    axis.text.x = element_text(
+      size = 11,
+      vjust = 1,
+      angle = 60
+    ),
+    axis.text.y = element_text(size = 11),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_line(color = "grey80"),
+    panel.grid.major.y = element_blank(),
+    plot.caption = element_text(hjust = 0)
+  )
 ```
-
 
 > ## Méthodologie
 >
 > La déclaration annuelle de données sociales (DADS) est une formalité administrative obligatoire pour toute entreprise employant des salariés. Elle contient des informations relatives à l'établissement et au salarié.
 > Ces données sont recueillies par l'Insee qui constitue des fichiers d'analyse. Le fichier utilisé ici est le fichier "postes" où chaque enregistrement correspond à un poste, c'est-à-dire à la consolidation des périodes de travail d'un salarié dans un même établissement.
 >
-> Un poste est catégorisé en fonction de plusieurs critères pour analyser si il re lève d'un "vrai" emploi ou d'un poste non annexe, par exemple saisonnier ou de très courte durée. Un poste est dit non-annexe si :
+> Un poste est catégorisé en fonction de plusieurs critères pour analyser si il relève d'un "vrai" emploi ou d'un poste non annexe, par exemple saisonnier ou de très courte durée. Un poste est dit non-annexe si :
 >
 > + la rémunération nette est supérieure à 3 SMIC mensuels ;
 > + ou le nombre d'heures salariées est supérieur à 120 et la durée de travail supérieure à 30 jours.
