@@ -16,6 +16,7 @@ library(tidyverse)
 library(here)
 library(gganimate)
 library(CARTElette)
+library(sf)
 ```
 
 
@@ -261,30 +262,115 @@ dads_postes %>%
 
 ## Analyse géographique
 
-```{r saisonnalite_geo}
-# Stats par dep
-stats_dep <- dads_postes %>% 
-  filter(filtre_poste == "Annexe") %>% 
-  group_by(DEPT) %>% 
-  summarise(date_deb_med = median(DATDEB),
-            date_deb_mean = mean(DATDEB),
-            date_deb_q1 = quantile(DATDEB)[2],
-            date_deb_q3 = quantile(DATDEB)[4],
-            n = n()) %>% 
-  filter(n > 30) 
-
+```{r saisonnalite_geo_1}
 # Shp dep
-shp_dep <- loadMap(COG = 2015, nivsupra = "DEP") 
+shp_dep <- loadMap(COG = 2015, nivsupra = "DEP") %>%
+  filter(!DEP %in% c("971", "972", "973", "974", "976"))
+
+# Stats par dep
+stats_dep <- dads_postes %>%
+  filter(filtre_poste == "Annexe") %>%
+  group_by(DEPT) %>%
+  summarise(
+    date_deb_med = median(DATDEB),
+    date_deb_d1 = quantile(DATDEB, probs = seq(0, 1, 0.1))[2],
+    date_deb_d2 = quantile(DATDEB, probs = seq(0, 1, 0.1))[3],
+    date_deb_d3 = quantile(DATDEB, probs = seq(0, 1, 0.1))[4],
+    date_deb_d4 = quantile(DATDEB, probs = seq(0, 1, 0.1))[5],
+    date_deb_d5 = quantile(DATDEB, probs = seq(0, 1, 0.1))[6],
+    date_deb_d6 = quantile(DATDEB, probs = seq(0, 1, 0.1))[7],
+    date_deb_d7 = quantile(DATDEB, probs = seq(0, 1, 0.1))[8],
+    date_deb_d8 = quantile(DATDEB, probs = seq(0, 1, 0.1))[9],
+    date_deb_d9 = quantile(DATDEB, probs = seq(0, 1, 0.1))[10],
+    n = n()
+  )
+
+# OPTION 1 - Date médiane par département
+# Avec sélection des départements et flèche
+# Jointure
+stats_dep_shp <- shp_dep %>%
+  filter(n > 30 & date_deb_med > 230) %>%
+  left_join(stats_dep, by = c("DEP" = "DEPT"))
+
+# Centroids pour label
+label_dep <- stats_dep_shp %>%
+  st_centroid %>%
+  st_coordinates() %>%
+  as_tibble() %>%
+  bind_cols(date_deb_med = stats_dep_shp$date_deb_med) %>%
+  filter(!is.na(date_deb_med))
+
+# Graph
+ggplot() +
+  geom_sf(data = stats_dep_shp, aes(fill = date_deb_med)) +
+  geom_text(data = label_dep,
+            aes(x = X, y = Y, label = date_deb_med),
+            size = 3) +
+  scale_fill_gradient(
+    name = "Date médiane \nde début d'emploi",
+    low = "#ffb59a",
+    high = "#ff4500",
+    na.value = "grey80"
+  ) +
+  theme_void()
+```
+
+```{r saisonnalite_geo_2, eval = FALSE}
+# OPTION 2 - Progression de l'emploi
+# Avec sélection des départements
+# Et on anime les transitions par décile
+decile_dep <- stats_dep %>%
+  pivot_longer(
+    cols = starts_with("date_deb_d"),
+    names_to = "decile",
+    values_to = "val_decile"
+  ) %>%
+  filter(n > 30) %>%
+  select(DEPT, decile, val_decile) %>%
+  mutate(decile = str_sub(decile,-2,-1),
+         val_decile = round(val_decile, 0),
+         val_decile = if_else(val_decile < 1, 0, val_decile)) 
 
 # Jointure
-shp_dep %>% 
-  left_join(stats_dep, by = c("DEP" = "DEPT")) %>% 
-  filter(!DEP %in% c("971", "972", "973", "974", "976")) %>% 
-  ggplot() +
-  geom_sf(aes(fill = date_deb_med)) +
-  scale_fill_gradient(low = "white", high = "red", na.value = "grey80") +
+decile_dep_shp <- shp_dep %>%
+  left_join(decile_dep %>%
+              bind_rows(tibble(DEPT = unique(decile_dep$DEPT))), by = c("DEP" = "DEPT")) %>%
+  mutate(decile = fct_explicit_na(decile, ""),
+         decile = fct_recode(decile,
+                             "10 %" = "d1",
+                             "20 %" = "d2",
+                             "30 %" = "d3",
+                             "40 %" = "d4",
+                             "50 %" = "d5",
+                             "60 %" = "d6",
+                             "70 %" = "d7",
+                             "80 %" = "d8",
+                             "90 %" = "d9")
+         val_decile = if_else(is.na(val_decile), 0, val_decile))
+
+# Graph animé
+anim_carte <- ggplot() +
+  geom_sf(data = decile_dep_shp, aes(fill = decile)) +
+  scale_fill_manual("Part des emplois \nayant débuté",
+    values = c(
+      "#ffa280",
+      "#ff7d4d",
+      "#ff6a33",
+      "#ff581a",
+      "#ff4500",
+      "#e63e00",
+      "#cc3700",
+      "#cc3700",
+      "#9a2900",
+      "grey80"
+    )
+  ) +
+  transition_manual(val_decile, 
+                    cumulative = TRUE) +
+  labs(title = "Jour : {current_frame}") +
   theme_void()
 
+anim_carte
 ```
 
 ## Analyse démographique
