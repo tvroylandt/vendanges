@@ -99,7 +99,7 @@ seq_empl_jour %>%
   mutate(part_n = n / sum(n)) %>%
   ggplot() +
   geom_area(aes(x = jour / 30, y = part_n * 100, fill = filtre_poste),
-            stat = "identity") +
+            stat = "identity", color = "grey40", size = 1.1) +
   geom_label(
     data = tibble(x = 4.5, y = 0.4, label = "La période des vendanges, en septembre, est visible ici"),
     aes(
@@ -148,7 +148,7 @@ seq_empl_jour %>%
                      breaks = seq(0, 0.7, 0.1),
                      limits = c(0, 0.6)) +
   scale_fill_manual("Type de poste",
-                    values = c("#ff4500", "#00baff")) +
+                    values = c("#b22222", "#22427c")) +
   labs(caption = "Source : Insee - DADS \nPart des emplois par date, moyenne décennale 2006-2015") +
   theme_minimal(base_line_size = 1) +
   theme(
@@ -174,7 +174,7 @@ dads_postes %>%
   filter(filtre_poste == "Annexe" & DATDEB > 0) %>%
   ggplot() +
   geom_boxplot(aes(x = annee, y = DATDEB / 30, group = annee),
-               outlier.alpha = 0.03) +
+               outlier.alpha = 0.03, fill = "#b22222") +
   geom_label(
     data = tibble(x = 2009, y = 3, label = "2007 et 2011 sont des années de vendanges précoces"),
     aes(
@@ -347,15 +347,15 @@ anim_carte <- ggplot() +
   geom_sf(data = decile_dep_shp, aes(fill = decile)) +
   scale_fill_manual("Part des emplois \nayant débuté",
     values = c(
-      "#ffa280",
-      "#ff7d4d",
-      "#ff6a33",
-      "#ff581a",
-      "#ff4500",
-      "#e63e00",
-      "#cc3700",
-      "#cc3700",
-      "#9a2900",
+      "#f0b0b0",
+      "#e37070",
+      "#db4545",
+      "#d73030",
+      "#b22222",
+      "#9d1e1e",
+      "#871a1a",
+      "#721616",
+      "#5d1212",
       "grey80"
     )
   ) +
@@ -477,7 +477,7 @@ ggplot() +
     )))
   ) +
   scale_fill_manual("Sexe",
-                    values = c("Homme" = "#00baff", "Femme" = "#ff4500")) +
+                    values = c("Homme" = "#22427c", "Femme" = "#b22222")) +
   coord_flip() +
   facet_grid(cols = vars(filtre_poste)) +
   labs(caption = "Source : Insee - DADS \nMoyenne 2006-2015 \nLa construction des données impose des classes d'âges quadriennales") +
