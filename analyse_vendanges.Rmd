@@ -19,7 +19,7 @@ shp_dep <- loadMap(COG = 2015, nivsupra = "DEP") %>%
 
 ```{r import_clean}
 # Import - filtre à intégrer en amont
-dads_postes <- read_rds(here("data/dads_filtre_05_15.rds")) %>% 
+dads_postes <- read_rds("data/dads_filtre_05_15.rds") %>% 
   filter(annee != 2005) %>% 
   mutate(filtre_poste = fct_recode(FILT,
                            "Annexe" = "2",
