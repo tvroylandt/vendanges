@@ -67,11 +67,9 @@ moy_10ans <- moy_empl %>%
   select(filtre_poste, part_empl, part_jour)
 ```
 
-Tisser un peu le récit (référence littéraire ? style journalistique ?)
+Les vendanges sont une période l'année où l'emploi saisonnier bondit. De nombreuses personnes sont alors recrutées spécialement pour l'occasion, pour des durées souvent courtes. La Dares a d'ailleurs récemment analysé ces durées de travail, qui sont différentes selon les vignobles, à partir de la Déclaration Sociale Nominative (DSN) : https://dares.travail-emploi.gouv.fr/dares-etudes-et-statistiques/etudes-et-syntheses/autres-publications/article/emplois-saisonniers-le-cas-des-vendanges.
 
-Intro sur qui compose la PCS au niveau métier, combien d'emploi (postes) cela représente + renvoi à la note méthodologique de fin.
-
-691D : Ouvriers de la viticulture ou de l'arboriculture fruitière
+On va s'appliquer ici à mettre en avant quelques caractéristiques de cet emploi lié aux vendanges, à partir des DADS de l'Insee (voir encadré). Le focus est fait sur le métier des ouvriers de la viticulture ou de l'arboriculture fruitière (PCS 691D). La catégorie d'analyse n'est donc pas pure, bien qu'elle soit majoritairement composée de vendangeurs.
 
 ## Emplois permanents et saisonniers
 
@@ -80,7 +78,7 @@ Au sein de la profession des ouvriers viticoles et arboriculteurs, deux modalit�
 + d'un côté des emplois permanents (ou poste non-annexe), à l'année ou sur des périodes longues. En moyenne, sur 10 ans, ils représentent `r filter(moy_10ans, filtre_poste == "Non annexe")$part_empl` % des emplois et `r filter(moy_10ans, filtre_poste == "Non annexe")$part_jour` % des jours travaillés ;
 + de l'autre côté des emplois saisonniers (ou poste annexe), sur de courtes périodes, pour les récoltes. De façon, inverse, ils représentent la majorité des emplois, `r filter(moy_10ans, filtre_poste == "Annexe")$part_empl` %, mais seulement `r filter(moy_10ans, filtre_poste == "Annexe")$part_jour` % des jours travaillés.
 
-## Analyse de la saisonnalité
+## La saisonnalité de l'emploi
 
 De façon assez logique, ces emplois ne se répartissent pas de la même façon au cours de l'année. Les emplois permanents sont de faits relativement stables selon les périodes, bien qu'on observe un pic au moment des récoltes. Les emplois saisonniers se multiplient au moment des périodes de récolte et notamment pendant les vendanges.
 
@@ -267,11 +265,12 @@ dads_postes %>%
   )
 ```
 
-## Analyse géographique
+## Caractéristiques géographiques
 
 Selon les départements, les récoltes et en particulier les vendanges, ne débutent pas à la même date.
+On voit bien que la majorité de l'emploi se concentre dans les départements qui font traditionnellement du vin, que ce soit dans le Sud-Ouest, autour de la Gironde, ou dans la Champagne ou la Bourgogne.
 
-Cas Champagne, Gironde, Alasace, Occitanie, etc...
+On remarque aussi que l'emploi a tendance a être plus dispersé dans le temps dans le Sud, notamment du fait des cultures fruitières. Il est par contre particulièrement concentré sur une courte période en Champagne.
 
 ```{r saisonnalite_geo, fig.align='center'}
 # Stats par dep
@@ -380,9 +379,9 @@ anim_carte <- ggplot() +
 animate(anim_carte, fps = 1)
 ```
 
-## Analyse démographique
+## Profils des vendangeurs
 
-On a des profils différents selon qu'il s'agisse des postes annexes ou non annexes.
+Selon qu'il s'agisse de postes saisonniers (annexes) ou permanents (non annexes), les profils des salariés sont bien différents. Dans un cas, on a plutôt affaire à des jeunes, avec davantage de femmes, alors que dans l'autre la pyramide des âges est plus répartie.
 
 ```{r demographie_comparaison, fig.height=6, fig.width=12}
 dads_demo <- dads_postes %>%
