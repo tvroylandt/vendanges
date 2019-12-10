@@ -94,15 +94,6 @@ seq_empl_jour %>%
   ggplot() +
   geom_area(aes(x = jour / 30, y = part_n * 100, fill = filtre_poste),
             stat = "identity", color = "grey40", size = 1.1) +
-  geom_label(
-    data = tibble(x = 4.5, y = 0.4, label = "La période des vendanges, en septembre, est visible ici"),
-    aes(
-      x = x,
-      y = y,
-      label = str_wrap(label, 15)
-    ),
-    label.size = NA
-  ) +
   geom_curve(
     data = tibble(
       x = 5,
@@ -119,6 +110,16 @@ seq_empl_jour %>%
     size = 0.5,
     curvature = -0.1,
     arrow = arrow(length = unit(0.01, "npc"), type = "open")
+  ) +
+  geom_label(
+    data = tibble(x = 4.5, y = 0.4, label = "La période des vendanges, en septembre, est bien visible"),
+    aes(
+      x = x,
+      y = y,
+      label = str_wrap(label, 15)
+    ),
+    label.size = NA,
+    size = 7
   ) +
   scale_x_continuous(
     "",
@@ -143,19 +144,24 @@ seq_empl_jour %>%
                      limits = c(0, 0.6)) +
   scale_fill_manual("Type de poste",
                     values = c("#b22222", "#22427c")) +
-  labs(caption = "Source : Insee - DADS \nPart des emplois par date, moyenne décennale 2006-2015") +
+  labs(caption = "Source : Insee - DADS \nPart des emplois par date, moyenne décennale 2006-2015 \nTraitements T.Vroylandt") +
   theme_minimal(base_line_size = 1) +
   theme(
+    text = element_text(family = "ubuntu"),
     axis.text.x = element_text(
-      size = 11,
-      vjust = 1,
+      size = 13,
+      vjust = 0.8,
       angle = 60
     ),
-    axis.text.y = element_text(size = 11),
+    axis.text.y = element_text(size = 13),
+    axis.title.y = element_text(size = 13),
+    legend.text = element_text(size = 13),
+    legend.title = element_text(size = 13),
     panel.grid.minor = element_blank(),
     panel.grid.major.x = element_blank(),
     panel.grid.major.y = element_line(color = "grey80"),
-    plot.caption = element_text(hjust = 0)
+    plot.caption = element_text(hjust = 0, 
+                                size = 11)
   )
 
 ```
@@ -169,24 +175,6 @@ dads_postes %>%
   ggplot() +
   geom_boxplot(aes(x = annee, y = DATDEB / 30, group = annee),
                outlier.alpha = 0.03, fill = "#b22222") +
-  geom_label(
-    data = tibble(x = 2009, y = 3, label = "2007 et 2011 sont des années de vendanges précoces"),
-    aes(
-      x = x,
-      y = y,
-      label = str_wrap(label, 18)
-    ),
-    label.size = NA
-  ) +
-  geom_label(
-    data = tibble(x = 2014, y = 3.5, label = "En 2013, les vendanges sont tardives, en octobre"),
-    aes(
-      x = x,
-      y = y,
-      label = str_wrap(label, 18)
-    ),
-    label.size = NA
-  ) +
   geom_curve(
     data = tibble(
       x = c(2008.7, 2009.2),
@@ -221,6 +209,26 @@ dads_postes %>%
     curvature = 0.1,
     arrow = arrow(length = unit(0.01, "npc"), type = "open")
   ) +
+  geom_label(
+    data = tibble(x = 2009, y = 3, label = "2007 et 2011 sont des années de vendanges précoces"),
+    aes(
+      x = x,
+      y = y,
+      label = str_wrap(label, 18)
+    ),
+    label.size = NA,
+    size = 7
+  ) +
+  geom_label(
+    data = tibble(x = 2014, y = 3.5, label = "En 2013, les vendanges sont tardives, en octobre"),
+    aes(
+      x = x,
+      y = y,
+      label = str_wrap(label, 18)
+    ),
+    label.size = NA,
+    size = 7
+  ) +
   scale_x_continuous("", breaks = seq(2006, 2015, 1)) +
   scale_y_continuous(
     "",
@@ -241,19 +249,21 @@ dads_postes %>%
     )
   ) +
   coord_flip() +
-  labs(caption = "Source : Insee - DADS \nDate de début des postes annexes") +
+  labs(caption = "Source : Insee - DADS \nDate de début des postes annexes \nTraitements T.Vroylandt") +
   theme_minimal(base_line_size = 1) +
   theme(
+    text = element_text(family = "ubuntu"),
     axis.text.x = element_text(
-      size = 11,
+      size = 13,
       vjust = 0.5,
       angle = 60
     ),
-    axis.text.y = element_text(size = 11),
+    axis.text.y = element_text(size = 13),
     panel.grid.minor = element_blank(),
     panel.grid.major.y = element_blank(),
     panel.grid.major.x = element_line(color = "grey80"),
-    plot.caption = element_text(hjust = 0)
+    plot.caption = element_text(hjust = 0, 
+                                size = 11)
   )
 ```
 
@@ -355,9 +365,13 @@ anim_carte <- ggplot() +
   ) +
   labs(title = "Date : {current_frame}") +
   theme_void() +
-  labs(caption = "Source : Insee - DADS \nDate de début des postes annexes \nDépartements avec plus de 30 observations avant pondération sur 10 ans \nNS : Non significatif") +
+  labs(caption = "Source : Insee - DADS \nDate de début des postes annexes \nDépartements avec plus de 30 observations avant pondération sur 10 ans \nNS : Non significatif \nTraitements T.Vroylandt") +
    theme(
-    plot.caption = element_text(hjust = 0)
+    text = element_text(family = "ubuntu"),
+    legend.text = element_text(size = 13),
+    legend.title = element_text(size = 13),
+    plot.caption = element_text(hjust = 0, 
+                                size = 11)
   ) +
   transition_manual(date, 
                     cumulative = TRUE)
@@ -371,7 +385,6 @@ animate(anim_carte, fps = 1)
 On a des profils différents selon qu'il s'agisse des postes annexes ou non annexes.
 
 ```{r demographie_comparaison, fig.height=6, fig.width=12}
-
 dads_demo <- dads_postes %>%
   mutate(
     AGE_TR = cut(
@@ -439,16 +452,6 @@ ggplot() +
     position = "dodge",
     width = 2
   ) +
-  geom_label(
-    data = com_label,
-    aes(
-      x = x,
-      y = y,
-      label = str_wrap(label, 15)
-    ),
-    size = 3.5,
-    label.size = NA
-  ) +
   geom_curve(
     data = com_fleche,
     aes(
@@ -462,6 +465,16 @@ ggplot() +
     arrow = arrow(length = unit(0.02, "npc"), 
                   type = "open")
   ) +
+  geom_label(
+    data = com_label,
+    aes(
+      x = x,
+      y = y,
+      label = str_wrap(label, 15)
+    ),
+    size = 7,
+    label.size = NA
+  ) +
   scale_x_discrete("") +
   scale_y_continuous(
     name = "Part des emplois (en %)",
@@ -474,26 +487,32 @@ ggplot() +
                     values = c("Homme" = "#22427c", "Femme" = "#b22222")) +
   coord_flip() +
   facet_grid(cols = vars(filtre_poste)) +
-  labs(caption = "Source : Insee - DADS \nMoyenne 2006-2015 \nLa construction des données impose des classes d'âges quadriennales") +
+  labs(caption = "Source : Insee - DADS \nMoyenne 2006-2015 \nLa construction des données impose des classes d'âges quadriennales \nTraitements T.Vroylandt") +
   theme_minimal(base_line_size = 1) +
   theme(
+    text = element_text(family = "ubuntu"),
     axis.text.x = element_text(
-      size = 11,
+      size = 13,
       vjust = 1,
       angle = 60
     ),
-    axis.text.y = element_text(size = 11),
+    axis.title.x = element_text(size = 13),
+    axis.text.y = element_text(size = 13),
+    legend.text = element_text(size = 13),
+    legend.title = element_text(size = 13),
+    strip.text = element_text(size = 13),
     panel.grid.minor = element_blank(),
     panel.grid.major.x = element_line(color = "grey80"),
     panel.grid.major.y = element_blank(),
-    plot.caption = element_text(hjust = 0)
+    plot.caption = element_text(hjust = 0,
+                                size = 11)
   )
 ```
 
 > ## Méthodologie
 >
 > La déclaration annuelle de données sociales (DADS) est une formalité administrative obligatoire pour toute entreprise employant des salariés. Elle contient des informations relatives à l'établissement et au salarié.
-> Ces données sont recueillies par l'Insee qui constitue des fichiers d'analyse. Le fichier utilisé ici est le fichier "postes" où chaque enregistrement correspond à un poste, c'est-à-dire à la consolidation des périodes de travail d'un salarié dans un même établissement.
+> Ces données sont recueillies par l'Insee qui constitue des fichiers d'analyse (https://www.insee.fr/fr/statistiques/3536754). Le fichier utilisé ici est le fichier "postes" où chaque enregistrement correspond à un poste, c'est-à-dire à la consolidation des périodes de travail d'un salarié dans un même établissement.
 >
 > Un poste est catégorisé en fonction de plusieurs critères pour analyser si il relève d'un "vrai" emploi ou d'un poste non annexe, par exemple saisonnier ou de très courte durée. Un poste est dit non-annexe si :
 >

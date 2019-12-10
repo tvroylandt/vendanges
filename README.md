@@ -1,6 +1,6 @@
 # Vendanges
 
-Ce dossier contient les codes pour l'article de blog : LIEN
+Ce dossier contient les codes pour l'article de blog : https://tvroylandt.netlify.com/post/vendanges/
 
 Pour vos remarques et commentaires, n'hésitez pas à me contacter
 
