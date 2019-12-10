@@ -34,6 +34,8 @@ vignettes/*.pdf
 # End of https://www.gitignore.io/api/r
 inst/doc
 
+# Sorties de la fiche
+*.html
 
 # Pour eviter la surcharge du github
 *.dbf
