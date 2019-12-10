@@ -1,9 +1,3 @@
----
-title: "Analyse vendanges DADS"
-author: "Thomas Vroylandt"
-date: "28/11/2019"
-output: html_document
----
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
