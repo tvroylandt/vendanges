@@ -67,7 +67,7 @@ moy_10ans <- moy_empl %>%
   select(filtre_poste, part_empl, part_jour)
 ```
 
-Les vendanges sont une période l'année où l'emploi saisonnier bondit. De nombreuses personnes sont alors recrutées spécialement pour l'occasion, pour des durées souvent courtes. La Dares a d'ailleurs récemment analysé ces durées de travail, qui sont différentes selon les vignobles, à partir de la Déclaration Sociale Nominative (DSN) : https://dares.travail-emploi.gouv.fr/dares-etudes-et-statistiques/etudes-et-syntheses/autres-publications/article/emplois-saisonniers-le-cas-des-vendanges.
+Les vendanges sont une période l'année où l'emploi saisonnier bondit. De nombreuses personnes sont alors recrutées spécialement pour l'occasion, pour des durées souvent courtes.
 
 On va s'appliquer ici à mettre en avant quelques caractéristiques de cet emploi lié aux vendanges, à partir des DADS de l'Insee (voir encadré). Le focus est fait sur le métier des ouvriers de la viticulture ou de l'arboriculture fruitière (PCS 691D). La catégorie d'analyse n'est donc pas pure, bien qu'elle soit majoritairement composée de vendangeurs.
 
@@ -376,7 +376,7 @@ anim_carte <- ggplot() +
                     cumulative = TRUE)
 
 # Animation
-animate(anim_carte, fps = 1)
+animate(anim_carte, fps = 2)
 ```
 
 ## Profils des vendangeurs
@@ -527,3 +527,13 @@ ggplot() +
 > Les remarques, commentaires et propositions sont les bienvenus : tvroylandt@gmail.com
 >
 
+> ## Bibliographie
+>
+> Ces quelques publications portent sur des sujets similaires ou proches.
+>
+> + Sur l'emploi saisonnier, à partir de la Déclaration Sociale Nominative (DSN) : [Limon, E. (2019), "Quelle place occupe l'emploi saisonnier en France ?", *Dares Analyses*, n\°057, décembre](https://dares.travail-emploi.gouv.fr/IMG/pdf/dares_analyses_emploi_saisonnier_france_2018-2019.pdf) avec un [focus sur les vendanges](https://dares.travail-emploi.gouv.fr/dares-etudes-et-statistiques/etudes-et-syntheses/autres-publications/article/emplois-saisonniers-le-cas-des-vendanges) ;
+> + Une publication large sur le sujet, de France Stratégie : [Réseau Emploi, Compétences (2016), « L’emploi saisonnier : enjeux et perspectives », Document de travail, France Stratégie, n\°06, juillet](https://www.strategie.gouv.fr/publications/lemploi-saisonnier-enjeux-perspectives) ;
+> + Sur le même sujet, en Occitanie : [Bonzi, A., Dotta, D., Fiche, D., Brossier, P. (2017), « Emploi salarié saisonnier - Une offre variée tout au long de l’année », Insee Analyses Occitanie, n\°49](https://www.insee.fr/fr/statistiques/3057298) ;
+> + Sur la filière viti-vinicole, ici en Bourgogne-Franche-Comté : [Adrover, S., Bouriez, M., Froissart, P. (2016), « Bourgogne-Beaujolais-Savoie-Jura : une filière viti-vinicole intégrée qui s’appuie sur plus de 8 700 établissements », Insee Analyses Bourgogne-Franche-Comté, n\°12](https://www.insee.fr/fr/statistiques/2415454) ;
+> + Sur les conditions de travail dans le domaine des vendanges : [Mutualité Sociale Agricole (2015), « Les expositions professionnelles des salariés agricoles en viticulture », SUMER Agricole 2010, n\°10](https://ssa.msa.fr/wp-content/uploads/2019/04/11646-Fiche-10-Expositions-professionnelles-des-salaries-agricoles-en-viticulture.pdf).
+>
