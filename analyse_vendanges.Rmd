@@ -12,7 +12,7 @@ library(CARTElette)
 library(sf)
 
 # Shp dep
-shp_dep <- loadMap(COG = 2015, nivsupra = "DEP") %>%
+shp_dep <- charger_carte(COG = 2015, nivsupra = "DEP") %>%
   filter(!DEP %in% c("971", "972", "973", "974", "976")) %>%
   st_simplify(dTolerance = 1500, preserveTopology = FALSE)
 ```
